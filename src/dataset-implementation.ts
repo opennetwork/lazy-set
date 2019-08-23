@@ -1,32 +1,23 @@
-import { DefaultDataFactory, isQuad, isQuadLike, Quad, QuadLike, TermLike } from "@opennetwork/rdf-data-model";
+import { Quad, QuadLike, TermLike } from "@opennetwork/rdf-data-model";
 import { QuadFilterIteratee } from "./quad-filter-iteratee";
 import { QuadRunIteratee } from "./quad-run-iteratee";
 import { QuadMapIteratee } from "./quad-map-iteratee";
 import { QuadReduceIteratee } from "./quad-reduce-iteratee";
 import { DatasetCoreImplementation } from "./dataset-core-implementation";
 import { Dataset } from "./dataset";
-import { isMatch } from "./match";
 import { DatasetCoreFactory } from "./dataset-core-factory";
-
-function getQuadInstance(quad: QuadLike): Quad {
-  return isQuad(quad) ? quad : DefaultDataFactory.fromQuad(quad);
-}
 
 export class DatasetImplementation extends DatasetCoreImplementation implements Dataset {
 
-  constructor(datasetFactory: DatasetCoreFactory, quads: Quad[]) {
+  constructor(datasetFactory: DatasetCoreFactory, quads: Iterable<QuadLike>) {
     super(datasetFactory, quads);
   }
 
-  addAll(quads: Dataset | Iterable<QuadLike> | QuadLike[]): Dataset {
-    return this.replace(
-      this.quads.concat(Array.from(quads).map(quad => {
-        if (isQuad(quad)) {
-          return quad;
-        }
-        return DefaultDataFactory.fromQuad(quad);
-      }))
-    );
+  addAll(quads: Iterable<QuadLike>): Dataset {
+    for (const quad of quads) {
+      this.add(quad);
+    }
+    return this;
   }
 
   contains(other: Dataset): boolean {
@@ -36,9 +27,8 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
   }
 
   deleteMatches(subject?: TermLike, predicate?: TermLike, object?: TermLike, graph?: TermLike): this {
-    return this.replace(
-      this.quads.filter(quad => !isMatch(quad, subject, predicate, object, graph))
-    );
+    // delete accepts QuadFind, which allows partial
+    return this.delete({ subject, predicate, object, graph });
   }
 
   difference(other: Dataset): Dataset {
@@ -57,23 +47,28 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
   }
 
   every(iteratee: QuadFilterIteratee): boolean {
-    return this.quads.every(
-      quad => iteratee.test(quad, this)
-    );
+    for (const quad of this) {
+      if (!iteratee.test(quad, this)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   filter(iteratee: QuadFilterIteratee): Dataset {
-    return this.datasetFactory.dataset(
-      this.quads.filter(
-        quad => iteratee.test(quad, this)
-      )
-    );
+    const set = new Set<Quad>();
+    for (const quad of this) {
+      if (iteratee.test(quad, this)) {
+        set.add(quad);
+      }
+    }
+    return this.datasetFactory.dataset(set);
   }
 
   forEach(iteratee: QuadRunIteratee): void {
-    this.quads.forEach(
-      quad => iteratee.run(quad, this)
-    );
+    for (const quad of this) {
+      iteratee.run(quad, this);
+    }
   }
 
   import(stream: unknown): Promise<Dataset> {
@@ -87,45 +82,36 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
   }
 
   map(iteratee: QuadMapIteratee): Dataset {
-    return this.datasetFactory.dataset(
-      this.quads.map(quad => {
-        const result = iteratee.map(quad, this);
-        return getQuadInstance(result);
-      })
-    );
+    const dataset = this.datasetFactory.dataset();
+    for (const quad of this) {
+      dataset.add(iteratee.map(quad, this));
+    }
+    return dataset;
   }
 
-  reduce<Accumulator = QuadLike>(iteratee: QuadReduceIteratee<Accumulator>, initialValue?: Accumulator): Accumulator extends QuadLike ? Quad : Accumulator {
-    function reduce(values: ReadonlyArray<Quad>, initialValue: Quad | Accumulator) {
-      return this.quads.reduce(
-        (accumulator: Accumulator, next: Quad) => {
-          const result = iteratee.run(accumulator, next, this);
-          if (isQuadLike(result)) {
-            return getQuadInstance(result);
-          }
-          return result;
-        },
-        initialValue
-      );
+  reduce<Accumulator extends QuadLike = QuadLike>(iteratee: QuadReduceIteratee<Accumulator>, initialValue?: Accumulator): Accumulator {
+    let accumulator: Accumulator = initialValue;
+    for (const quad of this) {
+      if (!accumulator) {
+        accumulator = (quad as unknown) as Accumulator;
+        continue;
+      }
+      accumulator = iteratee.run(accumulator, quad, this);
     }
-    if (!this.quads.length) {
-      return (isQuadLike(initialValue) ? getQuadInstance(initialValue) : initialValue) as Accumulator extends QuadLike ? Quad : Accumulator;
-    }
-    if (typeof initialValue !== "undefined") {
-      return reduce(this.quads, isQuadLike(initialValue) ? getQuadInstance(initialValue) : initialValue);
-    }
-    // Force use of first value
-    return reduce(this.quads.slice(1), this.quads[0]);
+    return accumulator;
   }
 
   some(iteratee: QuadFilterIteratee): boolean {
-    return this.quads.some(
-      quad => iteratee.test(quad, this)
-    );
+    for (const quad of this) {
+      if (iteratee.test(quad, this)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   toArray(): Quad[] {
-    return this.quads.slice();
+    return Array.from(this);
   }
 
   toCanonical(): string {
@@ -141,9 +127,9 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
   }
 
   union(quads: Dataset): Dataset {
-    return this.datasetFactory.dataset(
-      this.quads.concat(quads.toArray())
-    );
+    return quads.filter({
+      test: quad => this.has(quad)
+    });
   }
 
 }

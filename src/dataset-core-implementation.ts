@@ -1,54 +1,78 @@
-import { DatasetCore } from "./dataset-core";
-import { Quad, QuadLike, DefaultDataFactory, TermLike } from "@opennetwork/rdf-data-model";
+import { DatasetCore, QuadFind } from "./dataset-core";
+import { Quad, QuadLike, DefaultDataFactory, TermLike, isQuad } from "@opennetwork/rdf-data-model";
 import { isMatch } from "./match";
 import { DatasetCoreFactory } from "./dataset-core-factory";
+
+
 
 export class DatasetCoreImplementation implements DatasetCore {
 
   protected datasetFactory: DatasetCoreFactory;
-  protected quads: ReadonlyArray<Quad>;
+
+  protected quads: Set<Quad>;
 
   get size() {
-    return this.quads.length;
+    return this.quads.size;
   }
 
-  constructor(datasetFactory: DatasetCoreFactory, quads: Quad[]) {
-    this.quads = Object.freeze(quads);
+  constructor(datasetFactory: DatasetCoreFactory, quads?: Iterable<QuadLike>) {
     this.datasetFactory = datasetFactory;
+    this.replace(quads || []);
   }
 
-  add(quad: QuadLike) {
-    return this.replace(
-      this.quads.concat(DefaultDataFactory.fromQuad(quad))
-    );
-  }
-
-  delete(quad: QuadLike) {
-    return this.replace(
-      this.quads.filter(other => other.equals(quad))
-    );
-  }
-
-  protected replace(quads: Quad[]): this {
-    this.quads = Object.freeze(quads);
+  protected replace(quads: Iterable<QuadLike>): this {
+    this.quads = new Set<Quad>();
+    for (const quad of quads) {
+      this.add(quad);
+    }
     return this;
   }
 
-  has(quad: QuadLike) {
-    return this.quads.some(other => other.equals(quad));
+  add(quad: QuadLike) {
+    if (!this.has(quad)) {
+      this.quads.add(
+        isQuad(quad) ? quad : DefaultDataFactory.fromQuad(quad)
+      );
+    }
+    return this;
+  }
+
+  delete(find: QuadFind) {
+    for (const quad of this.iterableMatch(find)) {
+      this.quads.delete(quad);
+    }
+    return this;
+  }
+
+  has(find: QuadFind) {
+    const iterable = this.iterableMatch(find);
+    const iterator = iterable[Symbol.iterator]();
+    return !!iterator.next().value;
+  }
+
+  protected *iterableMatch(find: QuadFind): Iterable<Quad> {
+    for (const quad of this) {
+      if (isMatch(quad, find.subject, find.predicate, find.object, find.graph)) {
+        yield quad;
+      }
+    }
   }
 
   match(subject?: TermLike, predicate?: TermLike, object?: TermLike, graph?: TermLike) {
-    const matches = this.quads.filter(
-      quad => isMatch(quad, subject, predicate, object, graph)
-    );
+    const matches = new Set<Quad>();
+    for (const quad of this.iterableMatch({
+      subject,
+      predicate,
+      object,
+      graph
+    })) {
+      matches.add(quad);
+    }
     return this.datasetFactory.dataset(matches);
   }
 
-  *[Symbol.iterator]() {
-    for (let i = 0; i < this.quads.length; i += 1) {
-      yield this.quads[i];
-    }
+  [Symbol.iterator]() {
+    return this.quads[Symbol.iterator]();
   }
 
 }

@@ -7,7 +7,7 @@ import { QuadReduceIteratee } from "./quad-reduce-iteratee";
 
 export interface Dataset extends DatasetCore {
 
-  addAll(quads: Dataset | Iterable<QuadLike> | QuadLike[]): Dataset;
+  addAll(quads: Iterable<QuadLike>): Dataset;
   contains(other: Dataset): boolean;
   deleteMatches(subject?: TermLike, predicate?: TermLike, object?: TermLike, graph?: TermLike): Dataset;
   difference(other: Dataset): Dataset;
@@ -18,7 +18,7 @@ export interface Dataset extends DatasetCore {
   import(stream: unknown): Promise<Dataset>;
   intersection(other: Dataset): Dataset;
   map(iteratee: QuadMapIteratee): Dataset;
-  reduce<Accumulator = QuadLike>(iteratee: QuadReduceIteratee<Accumulator>, initialValue?: Accumulator): Accumulator extends QuadLike ? Quad : Accumulator;
+  reduce<Accumulator extends QuadLike = QuadLike>(iteratee: QuadReduceIteratee<Accumulator>, initialValue?: Accumulator): Accumulator;
   some(iteratee: QuadFilterIteratee): boolean;
   toArray(): Quad[];
   toCanonical(): string;
