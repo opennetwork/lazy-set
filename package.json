@@ -19,6 +19,7 @@
     "url": "https://github.com/opennetwork/rdf-dataset.git"
   },
   "devDependencies": {
+    "esm": "^3.2.25",
     "tslint": "^5.19.0",
     "typescript": "^3.5.3"
   }

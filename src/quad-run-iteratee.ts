@@ -1,4 +1,4 @@
-import { Quad, QuadLike } from "@opennetwork/rdf-data-model";
+import { Quad } from "@opennetwork/rdf-data-model";
 import { Dataset } from "./dataset";
 
 export interface QuadRunIteratee {

@@ -1,4 +1,4 @@
-import { Quad, QuadLike, TermLike } from "@opennetwork/rdf-data-model";
+import { QuadLike } from "@opennetwork/rdf-data-model";
 import { Dataset } from "./dataset";
 
 export interface DatasetCoreFactory {
