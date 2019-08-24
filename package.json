@@ -10,15 +10,17 @@
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "prepublishOnly": "npm run build"
   },
-  "peerDependencies": {},
-  "dependencies": {
+  "peerDependencies": {
     "@opennetwork/rdf-data-model": "^3.1.0"
+  },
+  "dependencies": {
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/opennetwork/rdf-dataset.git"
   },
   "devDependencies": {
+    "@opennetwork/rdf-data-model": "^3.1.0",
     "esm": "^3.2.25",
     "tslint": "^5.19.0",
     "typescript": "^3.5.3"
