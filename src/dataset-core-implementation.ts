@@ -15,7 +15,7 @@ function drain(iterator: Iterator<any>): boolean {
   return !!next.value;
 }
 
-export class DatasetCoreImplementation implements DatasetCore {
+export class DatasetCoreImplementation implements DatasetCore<undefined, Quad> {
 
   protected datasetFactory: DatasetCoreFactory;
 
@@ -25,6 +25,10 @@ export class DatasetCoreImplementation implements DatasetCore {
   get size() {
     this.drain();
     return this.quads.size;
+  }
+
+  getSize() {
+    return this.size;
   }
 
   constructor(datasetFactory: DatasetCoreFactory, quads?: Iterable<QuadLike>) {
@@ -119,5 +123,7 @@ export class DatasetCoreImplementation implements DatasetCore {
       }
     })();
   }
+
+  [Symbol.asyncIterator]: never;
 
 }

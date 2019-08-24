@@ -8,10 +8,10 @@ export { DatasetCoreFactory } from "./dataset-core-factory";
 export { AsyncDatasetCore } from "./async-dataset-core";
 export { AsyncDataset } from "./async-dataset";
 export { AsyncDatasetCoreFactory } from "./async-dataset-core-factory";
-export * from "./quad-filter-iteratee";
-export * from "./quad-map-iteratee";
-export * from "./quad-reduce-iteratee";
-export * from "./quad-run-iteratee";
+export * from "./filter-iteratee";
+export * from "./map-iteratee";
+export * from "./reduce-iteratee";
+export * from "./run-iteratee";
 
 export const DatasetFactory = new DatasetCoreFactoryImplementation();
 

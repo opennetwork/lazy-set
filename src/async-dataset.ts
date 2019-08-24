@@ -1,4 +1,4 @@
-import { AsyncDatasetCore } from "./async-dataset-core";
+import { DatasetCore } from "./dataset-core";
 import { Quad, QuadLike, TermLike } from "@opennetwork/rdf-data-model";
 import { AsyncQuadFilterIteratee } from "./async-quad-filter-iteratee";
 import { AsyncQuadRunIteratee } from "./async-quad-run-iteratee";
@@ -6,7 +6,7 @@ import { AsyncQuadMapIteratee } from "./async-quad-map-iteratee";
 import { AsyncQuadReduceIteratee } from "./async-quad-reduce-iteratee";
 import { Dataset } from "./dataset";
 
-export interface AsyncDataset extends AsyncDatasetCore {
+export interface AsyncDataset extends DatasetCore<Promise<any>, Quad> {
 
   addAll(quads: Iterable<QuadLike> | AsyncIterable<QuadLike>): Promise<void>;
   contains(other: Dataset | AsyncDataset): Promise<boolean>;

@@ -1,8 +1,8 @@
 import { Quad, QuadLike, TermLike } from "@opennetwork/rdf-data-model";
-import { QuadFilterIteratee } from "./quad-filter-iteratee";
-import { QuadRunIteratee } from "./quad-run-iteratee";
-import { QuadMapIteratee } from "./quad-map-iteratee";
-import { QuadReduceIteratee } from "./quad-reduce-iteratee";
+import { FilterIteratee } from "./filter-iteratee";
+import { RunIteratee } from "./run-iteratee";
+import { MapIteratee } from "./map-iteratee";
+import { QuadReduceIteratee } from "./reduce-iteratee";
 import { DatasetCoreImplementation } from "./dataset-core-implementation";
 import { Dataset } from "./dataset";
 import { DatasetCoreFactory } from "./dataset-core-factory";
@@ -46,7 +46,7 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
     );
   }
 
-  every(iteratee: QuadFilterIteratee): boolean {
+  every(iteratee: FilterIteratee): boolean {
     for (const quad of this) {
       if (!iteratee.test(quad, this)) {
         return false;
@@ -55,7 +55,7 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
     return true;
   }
 
-  filter(iteratee: QuadFilterIteratee): Dataset {
+  filter(iteratee: FilterIteratee): Dataset {
     const set = new Set<Quad>();
     for (const quad of this) {
       if (iteratee.test(quad, this)) {
@@ -65,7 +65,7 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
     return this.datasetFactory.dataset(set);
   }
 
-  forEach(iteratee: QuadRunIteratee): void {
+  forEach(iteratee: RunIteratee): void {
     for (const quad of this) {
       iteratee.run(quad, this);
     }
@@ -81,7 +81,7 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
     });
   }
 
-  map(iteratee: QuadMapIteratee): Dataset {
+  map(iteratee: MapIteratee): Dataset {
     const dataset = this.datasetFactory.dataset();
     for (const quad of this) {
       dataset.add(iteratee.map(quad, this));
@@ -101,7 +101,7 @@ export class DatasetImplementation extends DatasetCoreImplementation implements 
     return accumulator;
   }
 
-  some(iteratee: QuadFilterIteratee): boolean {
+  some(iteratee: FilterIteratee): boolean {
     for (const quad of this) {
       if (iteratee.test(quad, this)) {
         return true;
