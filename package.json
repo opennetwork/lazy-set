@@ -11,7 +11,7 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "@opennetwork/rdf-data-model": "^3.1.0"
+    "@opennetwork/rdf-data-model": "^4.0.0"
   },
   "dependencies": {},
   "repository": {
@@ -19,7 +19,7 @@
     "url": "https://github.com/opennetwork/rdf-dataset.git"
   },
   "devDependencies": {
-    "@opennetwork/rdf-data-model": "^3.1.0",
+    "@opennetwork/rdf-data-model": "^4.0.0",
     "esm": "^3.2.25",
     "tslint": "^5.19.0",
     "typescript": "^3.5.3"

@@ -18,10 +18,10 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@opennetwork/rdf-data-model@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.npmjs.org/@opennetwork/rdf-data-model/-/rdf-data-model-3.1.0.tgz#d26e5ad5858cb41d15bee8d0211caf94e98a4c9c"
-  integrity sha512-WqbMmEqjKQU5jobxNwosX3YqWwcMlcQRWDJsInTqM0vZ84q9UtQFD+d+YQM7H8bgGl5l7hOnhjpacatD1RHqdQ==
+"@opennetwork/rdf-data-model@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/@opennetwork/rdf-data-model/-/rdf-data-model-4.0.0.tgz#e0f44892f53608657844f5fca065757c50bf4ffe"
+  integrity sha512-M7QKfpszQgDZdB8Zt9KtSIcucwPuVOlBAulP6okZBvsLPuRtPd9KyVc1nLj9YRRif7SjqzBflLBRN39BY8qSFg==
   dependencies:
     pure-uuid "^1.5.7"
 
