@@ -1,6 +1,6 @@
 import { DatasetCoreFactoryImplementation } from "./dataset-core-factory-implementation";
 
-export { QuadFind } from "./dataset-core";
+export { isQuadFind, QuadFind } from "./dataset-core";
 export { isMatch } from "./match";
 export { DatasetCore } from "./dataset-core";
 export { Dataset } from "./dataset";
