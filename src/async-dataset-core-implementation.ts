@@ -1,24 +1,35 @@
 import { QuadFind } from "./dataset-core";
 import { Dataset } from "./dataset";
 import { AsyncDatasetCore } from "./async-dataset-core";
-import { DefaultDataFactory, isQuad, QuadLike, TermLike } from "@opennetwork/rdf-data-model";
+import { DefaultDataFactory, isQuad, Quad, QuadLike, TermLike } from "@opennetwork/rdf-data-model";
 import { DatasetCoreFactory } from "./dataset-core-factory";
 import { AsyncDatasetCoreFactory } from "./async-dataset-core-factory";
-import { Quad } from "@opennetwork/rdf-data-model";
-import { isMatch } from "./match";
+import { isMatch, isSingleMatcher } from "./match";
+import { asyncIterator, isAsyncIterable } from "./async-iterator";
+
+async function drain(iterator: AsyncIterator<any>) {
+  let next: IteratorResult<QuadLike>;
+  do {
+    next = await iterator.next();
+  } while (next.done);
+}
 
 export class AsyncDatasetCoreImplementation implements AsyncDatasetCore {
 
   protected datasetFactory: DatasetCoreFactory;
   protected asyncDatasetFactory: AsyncDatasetCoreFactory;
   protected dataset: Dataset;
-  protected initialQuads?: Iterable<QuadLike> | AsyncIterable<QuadLike>;
+  protected initialQuads?: AsyncIterator<QuadLike>;
 
   constructor(datasetFactory: DatasetCoreFactory, asyncDatasetFactory: AsyncDatasetCoreFactory, quads?: Iterable<QuadLike> | AsyncIterable<QuadLike>) {
     this.datasetFactory = datasetFactory;
     this.asyncDatasetFactory = asyncDatasetFactory;
-    this.dataset = datasetFactory.dataset();
-    this.initialQuads = quads;
+    if (isAsyncIterable(quads)) {
+      this.dataset = datasetFactory.dataset();
+      this.initialQuads = asyncIterator(quads);
+    } else {
+      this.dataset = datasetFactory.dataset(quads);
+    }
   }
 
   async getSize() {
@@ -29,10 +40,23 @@ export class AsyncDatasetCoreImplementation implements AsyncDatasetCore {
   }
 
   private async readAll() {
-    for await (const value of this.initialQuads) {
-      this.dataset.add(value);
-    }
+    await drain(this.readAllYield());
     this.initialQuads = undefined;
+  }
+
+  private async *readAllYield() {
+    let next: IteratorResult<QuadLike>;
+    do {
+      next = await this.initialQuads.next();
+      if (next.value) {
+        const quad = isQuad(next.value) ? next.value : DefaultDataFactory.fromQuad(next.value);
+        this.dataset.add(quad);
+        yield quad;
+      }
+    } while (!next.done);
+    if (next.done) {
+      this.initialQuads = undefined;
+    }
   }
 
   protected replace(quads: Iterable<QuadLike>): this {
@@ -64,36 +88,39 @@ export class AsyncDatasetCoreImplementation implements AsyncDatasetCore {
     return this.dataset.has(find);
   }
 
+  protected async *iterableMatch(find: QuadFind): AsyncIterable<Quad> {
+    for await (const quad of this) {
+      if (isMatch(quad, find.subject, find.predicate, find.object, find.graph)) {
+        yield quad;
+      }
+      // We're finished
+      if (isSingleMatcher(find.subject, find.predicate, find.object, find.graph)) {
+        break;
+      }
+    }
+  }
+
   match(subject?: TermLike, predicate?: TermLike, object?: TermLike, graph?: TermLike) {
-    const initialQuads = this.initialQuads;
-    const dataset = this.dataset;
-    const that = this;
     return this.asyncDatasetFactory.dataset(
-      (async function *() {
-        for (const value of that.dataset) {
-          if (isMatch(value, subject, predicate, object, graph)) {
-            yield value;
-          }
-        }
-        if (!initialQuads) {
-          return;
-        }
-        for await (const value of that.initialQuads) {
-          // Add to our own dataset
-          dataset.add(value);
-          if (isMatch(value, subject, predicate, object, graph)) {
-            yield value;
-          }
-        }
-        that.initialQuads = undefined;
-      })()
+      this.iterableMatch({
+        subject,
+        predicate,
+        object,
+        graph
+      })
     );
   }
 
   [Symbol.asyncIterator]() {
-    const dataset = this.dataset;
+    const that = this;
     return (async function *() {
-      for (const value of dataset) {
+      for (const value of that.dataset) {
+        yield value;
+      }
+      if (!that.initialQuads) {
+        return;
+      }
+      for await (const value of that.readAllYield()) {
         yield value;
       }
     })();

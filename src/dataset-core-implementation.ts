@@ -1,6 +1,6 @@
 import { DatasetCore, QuadFind } from "./dataset-core";
 import { Quad, QuadLike, DefaultDataFactory, TermLike, isQuad } from "@opennetwork/rdf-data-model";
-import { isMatch } from "./match";
+import { isMatch, isSingleMatcher } from "./match";
 import { DatasetCoreFactory } from "./dataset-core-factory";
 
 
@@ -55,20 +55,22 @@ export class DatasetCoreImplementation implements DatasetCore {
       if (isMatch(quad, find.subject, find.predicate, find.object, find.graph)) {
         yield quad;
       }
+      // We're finished
+      if (isSingleMatcher(find.subject, find.predicate, find.object, find.graph)) {
+        break;
+      }
     }
   }
 
   match(subject?: TermLike, predicate?: TermLike, object?: TermLike, graph?: TermLike) {
-    const matches = new Set<Quad>();
-    for (const quad of this.iterableMatch({
-      subject,
-      predicate,
-      object,
-      graph
-    })) {
-      matches.add(quad);
-    }
-    return this.datasetFactory.dataset(matches);
+    return this.datasetFactory.dataset(
+      this.iterableMatch({
+        subject,
+        predicate,
+        object,
+        graph
+      })
+    );
   }
 
   [Symbol.iterator]() {

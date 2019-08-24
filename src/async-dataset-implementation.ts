@@ -127,7 +127,11 @@ export class AsyncDatasetImplementation extends AsyncDatasetCoreImplementation i
   }
 
   async toArray(): Promise<Quad[]> {
-    return Array.from(this.dataset);
+    const array: Quad[] = [];
+    for await (const value of this) {
+      array.push(value);
+    }
+    return array;
   }
 
   toCanonical(): Promise<string> {
