@@ -3,28 +3,57 @@ import { Quad, QuadLike, DefaultDataFactory, TermLike, isQuad } from "@opennetwo
 import { isMatch, isSingleMatcher } from "./match";
 import { DatasetCoreFactory } from "./dataset-core-factory";
 
-
+/**
+ * @param iterator
+ * @returns true when something was drained
+ */
+function drain(iterator: Iterator<any>): boolean {
+  let next: IteratorResult<QuadLike>;
+  do {
+    next = iterator.next();
+  } while (next.done);
+  return !!next.value;
+}
 
 export class DatasetCoreImplementation implements DatasetCore {
 
   protected datasetFactory: DatasetCoreFactory;
 
   protected quads: Set<Quad>;
+  protected initialQuads?: Iterator<QuadLike>;
 
   get size() {
+    this.drain();
     return this.quads.size;
   }
 
   constructor(datasetFactory: DatasetCoreFactory, quads?: Iterable<QuadLike>) {
     this.datasetFactory = datasetFactory;
-    this.replace(quads || []);
+    this.replace(quads);
   }
 
-  protected replace(quads: Iterable<QuadLike>): this {
-    this.quads = new Set<Quad>();
-    for (const quad of quads) {
-      this.add(quad);
+  private drain() {
+    return drain(this.drainYield());
+  }
+
+  private *drainYield() {
+    let next: IteratorResult<QuadLike>;
+    do {
+      next = this.initialQuads.next();
+      if (next.value) {
+        const quad = isQuad(next.value) ? next.value : DefaultDataFactory.fromQuad(next.value);
+        this.quads.add(quad);
+        yield quad;
+      }
+    } while (!next.done);
+    if (next.done) {
+      this.initialQuads = undefined;
     }
+  }
+
+  protected replace(quads?: Iterable<QuadLike>): this {
+    this.quads = new Set<Quad>();
+    this.initialQuads = quads ? quads[Symbol.iterator]() : undefined;
     return this;
   }
 
@@ -38,16 +67,22 @@ export class DatasetCoreImplementation implements DatasetCore {
   }
 
   delete(find: QuadFind) {
-    for (const quad of this.iterableMatch(find)) {
+    // Avoid unneeded complete drain by first checking, can delete early, or check the complete iterable for an instance
+    let quad: Quad | undefined;
+    if (quad = this.get(find)) {
       this.quads.delete(quad);
     }
     return this;
   }
 
-  has(find: QuadFind) {
+  private get(find: QuadFind): Quad {
     const iterable = this.iterableMatch(find);
     const iterator = iterable[Symbol.iterator]();
-    return !!iterator.next().value;
+    return iterator.next().value;
+  }
+
+  has(find: QuadFind) {
+    return !!this.get(find);
   }
 
   protected *iterableMatch(find: QuadFind): Iterable<Quad> {
@@ -74,7 +109,15 @@ export class DatasetCoreImplementation implements DatasetCore {
   }
 
   [Symbol.iterator]() {
-    return this.quads[Symbol.iterator]();
+    const that = this;
+    return (function *() {
+      for (const value of that.quads) {
+        yield value;
+      }
+      for (const value of that.drainYield()) {
+        yield value;
+      }
+    })();
   }
 
 }

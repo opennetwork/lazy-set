@@ -7,11 +7,16 @@ import { AsyncDatasetCoreFactory } from "./async-dataset-core-factory";
 import { isMatch, isSingleMatcher } from "./match";
 import { asyncIterator, isAsyncIterable } from "./async-iterator";
 
-async function drain(iterator: AsyncIterator<any>) {
+/**
+ * @param iterator
+ * @returns true when something was drained
+ */
+async function drain(iterator: AsyncIterator<any>): Promise<boolean> {
   let next: IteratorResult<QuadLike>;
   do {
     next = await iterator.next();
   } while (next.done);
+  return !!next.value;
 }
 
 export class AsyncDatasetCoreImplementation implements AsyncDatasetCore {
@@ -24,27 +29,22 @@ export class AsyncDatasetCoreImplementation implements AsyncDatasetCore {
   constructor(datasetFactory: DatasetCoreFactory, asyncDatasetFactory: AsyncDatasetCoreFactory, quads?: Iterable<QuadLike> | AsyncIterable<QuadLike>) {
     this.datasetFactory = datasetFactory;
     this.asyncDatasetFactory = asyncDatasetFactory;
-    if (isAsyncIterable(quads)) {
-      this.dataset = datasetFactory.dataset();
-      this.initialQuads = asyncIterator(quads);
-    } else {
-      this.dataset = datasetFactory.dataset(quads);
-    }
+    this.replace(quads);
   }
 
   async getSize() {
-    if (this.initialQuads) {
-      await this.readAll();
-    }
+    await this.drain();
     return this.dataset.size;
   }
 
-  private async readAll() {
-    await drain(this.readAllYield());
-    this.initialQuads = undefined;
+  private drain(): Promise<boolean> {
+    return drain(this.drainYield());
   }
 
-  private async *readAllYield() {
+  private async *drainYield() {
+    if (!this.initialQuads) {
+      return;
+    }
     let next: IteratorResult<QuadLike>;
     do {
       next = await this.initialQuads.next();
@@ -54,15 +54,17 @@ export class AsyncDatasetCoreImplementation implements AsyncDatasetCore {
         yield quad;
       }
     } while (!next.done);
-    if (next.done) {
-      this.initialQuads = undefined;
-    }
+    this.initialQuads = undefined;
   }
 
-  protected replace(quads: Iterable<QuadLike>): this {
-    this.initialQuads = undefined;
-    this.dataset.delete({});
-    this.dataset.addAll(quads);
+  protected replace(quads?: Iterable<QuadLike> | AsyncIterable<QuadLike>): this {
+    if (isAsyncIterable(quads)) {
+      this.dataset = this.datasetFactory.dataset();
+      this.initialQuads = asyncIterator(quads);
+    } else {
+      this.dataset = this.datasetFactory.dataset(quads);
+      this.initialQuads = undefined;
+    }
     return this;
   }
 
@@ -71,21 +73,22 @@ export class AsyncDatasetCoreImplementation implements AsyncDatasetCore {
   }
 
   async delete(find: QuadFind) {
-    if (this.initialQuads) {
-      await this.readAll();
+    // Avoid unneeded complete drain by first checking, can delete early, or check the complete iterable for an instance
+    let quad: Quad | undefined;
+    if (quad = await this.get(find)) {
+      this.dataset.delete(quad);
     }
-    this.dataset.delete(find);
+  }
+
+  private async get(find: QuadFind): Promise<Quad> {
+    const iterable = this.iterableMatch(find);
+    const iterator = iterable[Symbol.asyncIterator]();
+    const next = await iterator.next();
+    return next.value;
   }
 
   async has(find: QuadFind) {
-    if (this.dataset.has(find)) {
-      return true;
-    }
-    if (!this.initialQuads) {
-      return false;
-    }
-    await this.readAll();
-    return this.dataset.has(find);
+    return !!await this.get(find);
   }
 
   protected async *iterableMatch(find: QuadFind): AsyncIterable<Quad> {
@@ -117,10 +120,7 @@ export class AsyncDatasetCoreImplementation implements AsyncDatasetCore {
       for (const value of that.dataset) {
         yield value;
       }
-      if (!that.initialQuads) {
-        return;
-      }
-      for await (const value of that.readAllYield()) {
+      for await (const value of that.drainYield()) {
         yield value;
       }
     })();
