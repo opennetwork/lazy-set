@@ -1,17 +1,24 @@
-import { DatasetCoreFactoryImplementation } from "./dataset-core-factory-implementation";
+import { DatasetCoreFactoryImplementation } from "./dataset/dataset-core-factory-implementation";
+import { Quad, isQuad, QuadLike, DefaultDataFactory, isQuadLike } from "@opennetwork/rdf-data-model";
+import { isMatch, QuadFind } from "./match";
 
-export { isQuadFind, QuadFind } from "./dataset-core";
-export { isMatch } from "./match";
-export { DatasetCore } from "./dataset-core";
-export { Dataset } from "./dataset";
-export { DatasetCoreFactory } from "./dataset-core-factory";
-export { AsyncDatasetCore } from "./async-dataset-core";
-export { AsyncDataset } from "./async-dataset";
-export { AsyncDatasetCoreFactory } from "./async-dataset-core-factory";
-export * from "./filter-iteratee";
-export * from "./map-iteratee";
-export * from "./reduce-iteratee";
-export * from "./run-iteratee";
+export * from "./dataset";
+export * from "./iterator";
 
-export const DatasetFactory = new DatasetCoreFactoryImplementation();
+export const QuadDatasetFactory = new DatasetCoreFactoryImplementation<undefined, Quad, QuadLike, QuadFind>({
+  async: false,
+  isMatch,
+  is: isQuad,
+  isLike: isQuadLike,
+  create: DefaultDataFactory.fromQuad
+});
+
+export const AsyncQuadDatasetFactory = new DatasetCoreFactoryImplementation<Promise<any>, Quad, QuadLike, QuadFind>({
+  async: true,
+  isMatch,
+  is: isQuad,
+  isLike: isQuadLike,
+  create: DefaultDataFactory.fromQuad
+});
+
 

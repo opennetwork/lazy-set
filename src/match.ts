@@ -1,28 +1,36 @@
 import { QuadLike, TermLike, DefaultDataFactory, isQuad } from "@opennetwork/rdf-data-model";
 
-export function isSingleMatcher(subject?: TermLike, predicate?: TermLike, object?: TermLike, graph?: TermLike): boolean {
+
+export declare type QuadFind = Partial<QuadLike | {
+  subject: TermLike;
+  predicate: TermLike;
+  object: TermLike;
+  graph: TermLike;
+}>;
+
+export function isSingleMatcher(find: QuadFind): boolean {
   return !!(
-    subject &&
-    predicate &&
-    object &&
-    graph
+    find.subject &&
+    find.predicate &&
+    find.object &&
+    find.graph
   );
 }
 
-export function isMatch(quad: QuadLike, subject?: TermLike, predicate?: TermLike, object?: TermLike, graph?: TermLike): boolean {
+export function isMatch(quad: QuadLike, find: QuadFind): boolean {
   const quadInstance = isQuad(quad) ? quad : DefaultDataFactory.fromQuad(quad);
   return (
     (
-      !subject || quadInstance.subject.equals(subject)
+      !find.subject || quadInstance.subject.equals(find.subject)
     ) &&
     (
-      !predicate || quadInstance.predicate.equals(predicate)
+      !find.predicate || quadInstance.predicate.equals(find.predicate)
     ) &&
     (
-      !object || quadInstance.object.equals(object)
+      !find.object || quadInstance.object.equals(find.object)
     ) &&
     (
-      !graph || quadInstance.graph.equals(graph)
+      !find.graph || quadInstance.graph.equals(find.graph)
     )
   );
 }
