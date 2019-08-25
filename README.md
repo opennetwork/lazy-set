@@ -1,3 +1,5 @@
-# RDF Dataset
+# Dataset
 
-Loose in memory implementation of [https://rdf.js.org/dataset-spec/](https://rdf.js.org/dataset-spec/)
+In memory dataset for both sync and async contexts, based of (but not conforming to) [https://rdf.js.org/dataset-spec/](https://rdf.js.org/dataset-spec/)
+
+
