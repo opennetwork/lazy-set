@@ -149,7 +149,9 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
             yield value;
           }
           for (const value of other) {
-            yield value;
+            if (!this.has(value)) {
+              yield value;
+            }
           }
         },
         async function *(): AsyncIterable<T | TLike> {
@@ -157,7 +159,9 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
             yield value;
           }
           for await (const value of asyncIterable(other)) {
-            yield value;
+            if (!await this.has(value)) {
+              yield value;
+            }
           }
         },
         this
