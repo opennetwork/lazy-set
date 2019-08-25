@@ -142,7 +142,7 @@ export class DatasetCoreImplementation<R extends ResultType, T, TLike, TFind> im
   }
 
   get(find: T | TLike | TFind) {
-    const match = this.match(find);
+    const match = this.datasetFactory.dataset(this).match(find);
     return this.datasetFactory.value(
       () => {
         const iterator = match[Symbol.iterator]();
@@ -157,7 +157,7 @@ export class DatasetCoreImplementation<R extends ResultType, T, TLike, TFind> im
   }
 
   has(find: T | TLike | TFind) {
-    return this.match(find).hasAny();
+    return this.datasetFactory.dataset(this).match(find).hasAny();
   }
 
   hasAny() {
@@ -173,40 +173,6 @@ export class DatasetCoreImplementation<R extends ResultType, T, TLike, TFind> im
       },
       this
     );
-  }
-
-  some(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>): ResultValue<R, boolean> {
-    return this.filter(iteratee).hasAny();
-  }
-
-  filter(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>, negate: boolean = false): Dataset<R, T, TLike, TFind> {
-    const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.test.bind(iteratee);
-    function negateIfNeeded(value: boolean) {
-      return negate ? !value : value;
-    }
-    return this.datasetFactory.dataset(
-      this.datasetFactory.value(
-        function *(): Iterable<T> {
-          for (const value of this) {
-            if (negateIfNeeded(fn(value, this))) {
-              yield value;
-            }
-          }
-        },
-        async function *(): AsyncIterable<T> {
-          for await (const value of this) {
-            if (negateIfNeeded(await fn(value, this))) {
-              yield value;
-            }
-          }
-        },
-        this
-      )
-    );
-  }
-
-  match(find: T | TLike | TFind) {
-    return this.filter(value => this.datasetFactory.isMatch(value, find));
   }
 
   *[Symbol.iterator](): Iterator<T> {

@@ -10,7 +10,7 @@ import { DatasetCoreImplementation } from "./dataset-core-implementation";
 import {
   Dataset,
   DatasetCoreFactory,
-  ResultType,
+  ResultType, ResultValue,
   SyncableDatasetIterableTypeLike
 } from "./types";
 
@@ -160,6 +160,40 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
           }
           for await (const value of asyncIterable(other)) {
             if (!await this.has(value)) {
+              yield value;
+            }
+          }
+        },
+        this
+      )
+    );
+  }
+
+  some(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>): ResultValue<R, boolean> {
+    return this.filter(iteratee).hasAny();
+  }
+
+  match(find: T | TLike | TFind) {
+    return this.filter(value => this.datasetFactory.isMatch(value, find));
+  }
+
+  filter(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>, negate: boolean = false): Dataset<R, T, TLike, TFind> {
+    const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.test.bind(iteratee);
+    function negateIfNeeded(value: boolean) {
+      return negate ? !value : value;
+    }
+    return this.datasetFactory.dataset(
+      this.datasetFactory.value(
+        function *(): Iterable<T> {
+          for (const value of this) {
+            if (negateIfNeeded(fn(value, this))) {
+              yield value;
+            }
+          }
+        },
+        async function *(): AsyncIterable<T> {
+          for await (const value of this) {
+            if (negateIfNeeded(await fn(value, this))) {
               yield value;
             }
           }

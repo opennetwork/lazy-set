@@ -21,4 +21,8 @@ export interface Dataset<R extends ResultType, T, TLike, TFind> extends DatasetC
   toArray(): ResultValue<R, T[]>;
   union(quads: SyncableDatasetIterableTypeLike<R, T | TLike>): Dataset<R, T, TLike, TFind>;
 
+  some(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>): ResultValue<R, boolean>;
+  filter(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>, negate?: boolean): Dataset<R, T, TLike, TFind>;
+  match(find: T | TLike | TFind): Dataset<R, T, TLike, TFind>;
+
 }
