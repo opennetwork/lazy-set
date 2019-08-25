@@ -30,8 +30,8 @@ export function asyncIterable<T>(value: Iterable<T> | AsyncIterable<T>): AsyncIt
   };
 }
 
-export function isAsyncDatasetIterable<R extends ResultType, T>(datasetIterable: SyncableDatasetIterableTypeLike<any, T>): datasetIterable is DatasetIterable<Promise<any>, T> {
-  function isAsyncIterableInstance(datasetIterable: SyncableDatasetIterableTypeLike<any, T>): datasetIterable is DatasetIterable<Promise<any>, T> {
+export function isAsyncDatasetIterable<R extends ResultType, T>(datasetIterable: SyncableDatasetIterableTypeLike<any, T>): datasetIterable is DatasetIterable<true, T> {
+  function isAsyncIterableInstance(datasetIterable: SyncableDatasetIterableTypeLike<any, T>): datasetIterable is DatasetIterable<true, T> {
     return typeof datasetIterable === "object";
   }
   return !!(
@@ -40,8 +40,8 @@ export function isAsyncDatasetIterable<R extends ResultType, T>(datasetIterable:
   );
 }
 
-export function isDatasetIterable<T, TLike>(datasetIterable: SyncableDatasetIterableTypeLike<any, T>): datasetIterable is DatasetIterable<undefined, T> {
-  function isIterableInstance(datasetIterable: SyncableDatasetIterableTypeLike<any, T>): datasetIterable is DatasetIterable<undefined, T> {
+export function isDatasetIterable<T, TLike>(datasetIterable: SyncableDatasetIterableTypeLike<any, T>): datasetIterable is DatasetIterable<false, T> {
+  function isIterableInstance(datasetIterable: SyncableDatasetIterableTypeLike<any, T>): datasetIterable is DatasetIterable<false, T> {
     return typeof datasetIterable === "object";
   }
   return !!(
@@ -53,7 +53,7 @@ export function isDatasetIterable<T, TLike>(datasetIterable: SyncableDatasetIter
 /**
  * When this function is used, each promise is resolved externally in a sequential order
  */
-function *asyncDatasetIterator<T>(datasetIterable: DatasetIterable<Promise<any>, T>): DatasetIterator<Promise<any>, T> {
+function *asyncDatasetIterator<T>(datasetIterable: DatasetIterable<true, T>): DatasetIterator<true, T> {
   const iterator: AsyncIterator<T> = datasetIterable[Symbol.asyncIterator]();
   let currentPromise: Promise<T> = undefined,
     done: boolean = false;
@@ -75,7 +75,7 @@ function *asyncDatasetIterator<T>(datasetIterable: DatasetIterable<Promise<any>,
   return;
 }
 
-export function getAsyncDatasetIterator<T>(datasetIterable: DatasetIterable<Promise<any>, T>): DatasetIterator<Promise<any>, T> {
+export function getAsyncDatasetIterator<T>(datasetIterable: DatasetIterable<true, T>): DatasetIterator<true, T> {
   return asyncDatasetIterator(datasetIterable);
 }
 

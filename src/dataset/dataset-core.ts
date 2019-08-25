@@ -1,5 +1,5 @@
-export type ResultType = Promise<any> | undefined;
-export type ResultValue<R extends ResultType, V, PV = Promise<V>> = R extends undefined ? V : PV;
+export type ResultType = true | false;
+export type ResultValue<R extends ResultType, V, PV = Promise<V>> = R extends true ? PV : V;
 
 export type DatasetIterableType<R extends ResultType, T> = ResultValue<R, Iterable<T>, AsyncIterable<T>>;
 export type SyncableDatasetIterableTypeLike<R extends ResultType, T> = DatasetIterableType<R, T> | DatasetIterableType<undefined, T>;

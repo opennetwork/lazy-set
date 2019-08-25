@@ -9,8 +9,7 @@ import {
   DatasetCoreFactory
 } from "../dataset";
 import {
-  getDatasetIterator,
-  FilterIterateeLike
+  getDatasetIterator
 } from "../iterator";
 
 export class DatasetCoreImplementation<R extends ResultType, T, TLike, TFind> implements DatasetCore<R, T, TLike, TFind> {

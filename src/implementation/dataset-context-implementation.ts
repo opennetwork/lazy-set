@@ -16,8 +16,8 @@ export type PartialDatasetContextOptions<R extends ResultType, T, TLike, TFind> 
   & Pick<DatasetContextOptions<R, T, TLike, TFind, T | TLike>, "async">;
 
 export type AsyncDefinedPartialDatasetContextOptions<R extends ResultType, T, TLike, TFind, Async extends boolean> = Omit<PartialDatasetContextOptions<R, T, TLike, TFind>, "async"> & { async: Async };
-export type AsyncPartialDatasetContextOptions<T, TLike, TFind> = AsyncDefinedPartialDatasetContextOptions<Promise<any>, T, TLike, TFind, true>;
-export type SyncPartialDatasetContextOptions<T, TLike, TFind> = AsyncDefinedPartialDatasetContextOptions<undefined, T, TLike, TFind, false>;
+export type AsyncPartialDatasetContextOptions<T, TLike, TFind> = AsyncDefinedPartialDatasetContextOptions<true, T, TLike, TFind, true>;
+export type SyncPartialDatasetContextOptions<T, TLike, TFind> = AsyncDefinedPartialDatasetContextOptions<false, T, TLike, TFind, false>;
 
 export class DatasetContextImplementation<R extends ResultType, T, TLike, TFind> implements DatasetContext<R, T, TLike, TFind, DatasetCreateValue<R, T, TLike>> {
 

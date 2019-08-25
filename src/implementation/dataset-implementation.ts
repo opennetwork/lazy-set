@@ -3,14 +3,14 @@ import {
   RunIterateeLike,
   MapIterateeLike,
   ReduceIterateeLike,
-  asyncIterable,
   isDatasetIterable
 } from "../iterator";
 import { DatasetCoreImplementation } from "./dataset-core-implementation";
 import {
   Dataset,
   DatasetCoreFactory,
-  ResultType, ResultValue,
+  ResultType,
+  ResultValue,
   SyncableDatasetIterableTypeLike
 } from "../dataset";
 
