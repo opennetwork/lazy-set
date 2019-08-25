@@ -4,7 +4,7 @@ import {
   RunIterateeLike,
   MapIterateeLike,
   ReduceIterateeLike
-} from "../../iterator";
+} from "../iterator/index";
 
 export interface Dataset<R extends ResultType, T, TLike, TFind> extends DatasetCore<R, T, TLike, TFind> {
 

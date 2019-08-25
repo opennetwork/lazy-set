@@ -7,7 +7,7 @@ import {
   DatasetCoreIterable,
   SyncableDatasetIterableTypeLike,
   DatasetCoreFactory
-} from "./types";
+} from "../dataset";
 import {
   getDatasetIterator,
   FilterIterateeLike

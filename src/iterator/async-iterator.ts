@@ -1,4 +1,4 @@
-import { DatasetIterable, DatasetIterator, ResultType, SyncableDatasetIterableTypeLike } from "../dataset/index";
+import { DatasetIterable, DatasetIterator, ResultType, SyncableDatasetIterableTypeLike } from "../dataset";
 
 export function isAsyncIterable<T>(value: Iterable<T> | AsyncIterable<T>): value is AsyncIterable<T> {
   function isAsyncIterableInstance(value: Iterable<T> | AsyncIterable<T>): value is AsyncIterable<T> {

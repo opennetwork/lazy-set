@@ -12,7 +12,7 @@ import {
   DatasetCoreFactory,
   ResultType, ResultValue,
   SyncableDatasetIterableTypeLike
-} from "./types";
+} from "../dataset";
 
 export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extends DatasetCoreImplementation<R, T, TLike, TFind> implements Dataset<R, T, TLike, TFind> {
 
@@ -139,6 +139,7 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
   }
 
   union(other: SyncableDatasetIterableTypeLike<R, T | TLike>): Dataset<R, T, TLike, TFind> {
+    const otherDataset = this.datasetFactory.dataset(other);
     return this.datasetFactory.dataset(
       this.datasetFactory.value(
         function *(): Iterable<T | TLike> {
@@ -148,7 +149,7 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
           for (const value of this) {
             yield value;
           }
-          for (const value of other) {
+          for (const value of otherDataset) {
             if (!this.has(value)) {
               yield value;
             }
@@ -158,7 +159,7 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
           for await (const value of this) {
             yield value;
           }
-          for await (const value of asyncIterable(other)) {
+          for await (const value of otherDataset) {
             if (!await this.has(value)) {
               yield value;
             }

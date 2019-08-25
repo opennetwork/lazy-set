@@ -3,7 +3,7 @@ import {
   DatasetCoreFactory,
   ResultType,
   SyncableDatasetIterableTypeLike
-} from "./types";
+} from "../dataset";
 import { isAsyncIterable } from "../iterator";
 import { DatasetImplementation } from "./dataset-implementation";
 import { DatasetContextImplementation } from "./dataset-context-implementation";

@@ -1,6 +1,6 @@
-import { SyncPartialDatasetContextOptions, AsyncPartialDatasetContextOptions } from "./dataset/dataset-context-implementation";
-import { DatasetCoreFactoryImplementation } from "./dataset/dataset-core-factory-implementation";
-import { DatasetCoreFactory } from "./dataset/types";
+import { SyncPartialDatasetContextOptions, AsyncPartialDatasetContextOptions } from "./implementation/dataset-context-implementation";
+import { DatasetCoreFactoryImplementation } from "./implementation/dataset-core-factory-implementation";
+import { DatasetCoreFactory } from "./dataset";
 import { WithOptionalKeys } from "tsdef";
 
 export * from "./dataset";

@@ -7,7 +7,7 @@ import {
   DatasetCreateValue,
   ResultType,
   ResultValue
-} from "./types";
+} from "../dataset";
 import { NilableProps } from "tsdef";
 
 export type PartialDatasetContextOptions<R extends ResultType, T, TLike, TFind> =
