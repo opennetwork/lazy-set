@@ -45,25 +45,25 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
     return this.datasetFactory.dataset(other).every(value => that.has(value));
   }
 
-  every(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>) {
+  every(iteratee: FilterIterateeLike<R, T, this>) {
     const resultValue = this.filter(iteratee, true).hasAny();
     return this.datasetFactory.value(() => !resultValue, async () => !await resultValue);
   }
 
   forEach(iteratee: RunIterateeLike<R, T, TLike, TFind, this>) {
     const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.run.bind(iteratee);
-    const that = this;
     return this.datasetFactory.value(
       () => {
-        for (const value of that) {
-          fn(value, that);
+        for (const value of this) {
+          fn(value, this);
         }
       },
       async () => {
-        for await (const value of that) {
-          await fn(value, that);
+        for await (const value of this) {
+          await fn(value, this);
         }
-      }
+      },
+      this
     );
   }
 
@@ -78,50 +78,50 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
     });
   }
 
-  map(iteratee: MapIterateeLike<R, T, TLike, TFind, this>): Dataset<R, T, TLike, TFind> {
+  map(iteratee: MapIterateeLike<R, T, this>): Dataset<R, T, TLike, TFind> {
     const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.map.bind(iteratee);
-    const that = this;
     return this.datasetFactory.dataset(
       this.datasetFactory.value(
         function *() {
-          for (const value of that) {
-            yield fn(value, that);
+          for (const value of this) {
+            yield fn(value, this);
           }
         },
         async function *() {
-          for await (const value of that) {
-            yield await fn(value, that);
+          for await (const value of this) {
+            yield await fn(value, this);
           }
-        }
+        },
+        this
       )
     );
   }
 
-  reduce<Accumulator = T>(iteratee: ReduceIterateeLike<R, T, TLike, TFind, this, Accumulator>, initialValue?: Accumulator) {
+  reduce<Accumulator = T>(iteratee: ReduceIterateeLike<R, T, this, Accumulator>, initialValue?: Accumulator) {
     const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.run.bind(iteratee);
     let accumulator: Accumulator = initialValue;
-    const that = this;
     return this.datasetFactory.value(
-      () => {
+      function () {
         for (const value of this) {
           if (!accumulator) {
             accumulator = (value as unknown) as Accumulator;
             continue;
           }
-          accumulator = fn(accumulator, value, that);
+          accumulator = fn(accumulator, value, this);
         }
         return accumulator;
       },
-      async () => {
+      async function () {
         for await (const value of this) {
           if (!accumulator) {
             accumulator = (value as unknown) as Accumulator;
             continue;
           }
-          accumulator = await fn(accumulator, value, that);
+          accumulator = await fn(accumulator, value, this);
         }
         return accumulator;
-      }
+      },
+      this
     );
   }
 
@@ -169,7 +169,7 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
     );
   }
 
-  some(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>): ResultValue<R, boolean> {
+  some(iteratee: FilterIterateeLike<R, T, this>): ResultValue<R, boolean> {
     return this.filter(iteratee).hasAny();
   }
 
@@ -177,7 +177,7 @@ export class DatasetImplementation<R extends ResultType, T, TLike, TFind> extend
     return this.filter(value => this.datasetFactory.isMatch(value, find));
   }
 
-  filter(iteratee: FilterIterateeLike<R, T, TLike, TFind, this>, negate: boolean = false): Dataset<R, T, TLike, TFind> {
+  filter(iteratee: FilterIterateeLike<R, T, this>, negate: boolean = false): Dataset<R, T, TLike, TFind> {
     const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.test.bind(iteratee);
     function negateIfNeeded(value: boolean) {
       return negate ? !value : value;

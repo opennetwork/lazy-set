@@ -1,10 +1,10 @@
 import { ResultType } from "../dataset";
 import { IterateeFn } from "./iteratee";
 
-export type FilterIterateeFn<R extends ResultType, T, TLike, TFind, This> = IterateeFn<R, T, TLike, TFind, This, unknown>;
+export type FilterIterateeFn<R extends ResultType, T, This, ThisValue = This> = IterateeFn<R, T, This, ThisValue, unknown>;
 
-export interface FilterIteratee<R extends ResultType, T, TLike, TFind> {
-  test: FilterIterateeFn<R, T, TLike, TFind, this>;
+export interface FilterIteratee<R extends ResultType, T, ThisValue> {
+  test: FilterIterateeFn<R, T, this, ThisValue>;
 }
 
-export type FilterIterateeLike<R extends ResultType, T, TLike, TFind, This> = FilterIterateeFn<R, T, TLike, TFind, This> | FilterIteratee<R, T, TLike, TFind>;
+export type FilterIterateeLike<R extends ResultType, T, This> = FilterIterateeFn<R, T, This, This> | FilterIteratee<R, T, This>;
