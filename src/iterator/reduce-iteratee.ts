@@ -1,4 +1,4 @@
-import { ResultType, ResultValue } from "../dataset";
+import { ResultType, ResultValue } from "./result-type";
 
 export interface ReduceIterateeFn<R extends ResultType, T, This, ThisValue = This, Accumulator = T> {
   (this: This, accumulator: Accumulator, data: T, thisValue: ThisValue): ResultValue<R, Accumulator, Accumulator | Promise<Accumulator>>;

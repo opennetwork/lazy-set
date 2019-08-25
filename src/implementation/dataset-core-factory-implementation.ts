@@ -1,20 +1,50 @@
 import {
+  AsyncDataset,
+  AsyncIterableLike,
   Dataset,
-  DatasetCoreFactory,
-  ResultType,
-  SyncableDatasetIterableTypeLike
+  DatasetContext,
+  DatasetCoreFactory
 } from "../dataset";
-import { isAsyncIterable } from "../iterator";
-import { DatasetImplementation } from "./dataset-implementation";
-import { DatasetContextImplementation } from "./dataset-context-implementation";
+import { asyncIterable } from "../iterator";
+import { DatasetImplementation } from "./sync/dataset-implementation";
+import { AsyncDatasetImplementation } from "./async/async-dataset-implementation";
+import { DatasetContextImplementation, PartialDatasetContextOptions } from "./sync/dataset-context-implementation";
+import { AsyncDatasetContextImplementation } from "./async/async-dataset-context-implementation";
 
-export class DatasetCoreFactoryImplementation<R extends ResultType, T, TLike, TFind> extends DatasetContextImplementation<R, T, TLike, TFind> implements DatasetCoreFactory<R, T, TLike, TFind> {
+export type DatasetCoreFactoryOptions<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> = Omit<PartialDatasetContextOptions<false, T, TCreate, TFind>, "async">;
 
-  dataset(sequence?: SyncableDatasetIterableTypeLike<R, T | TLike>): Dataset<R, T, TLike, TFind> {
-    if (isAsyncIterable(sequence) && !this.async) {
-      throw new Error("Attempted to use async iterator in a sync context");
-    }
-    return new DatasetImplementation<R, T, TLike, TFind>(this, sequence);
+export class DatasetCoreFactoryImplementation<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> implements DatasetCoreFactory<T, TCreate, TFind> {
+
+  private readonly syncContext: DatasetContext<false, T, TCreate, TFind, Iterable<any>>;
+  private readonly asyncContext: DatasetContext<true, T, TCreate, TFind, AsyncIterable<any>>;
+
+  constructor(options: DatasetCoreFactoryOptions<T, TCreate, TFind>) {
+    this.syncContext = new DatasetContextImplementation({
+      ...options,
+      async: false
+    });
+    this.asyncContext = new AsyncDatasetContextImplementation({
+      ...options,
+      async: true
+    });
   }
+
+  dataset(sequence?: Iterable<T>): Dataset<T, TCreate, TFind> {
+    return new DatasetImplementation<T, TCreate, TFind>(
+      this,
+      this.syncContext,
+      sequence
+    );
+  }
+
+  asyncDataset(sequence: AsyncIterableLike<T>): AsyncDataset<T, TCreate, TFind> {
+    const iterable: AsyncIterable<T> | undefined = sequence ? asyncIterable(sequence) : undefined;
+    return new AsyncDatasetImplementation<T, TCreate, TFind>(
+      this,
+      this.asyncContext,
+      iterable
+    );
+  }
+
 
 }

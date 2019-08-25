@@ -1,5 +1,5 @@
-import { ResultType } from "../dataset";
 import { IterateeFn } from "./iteratee";
+import { ResultType } from "./result-type";
 
 export type FilterIterateeFn<R extends ResultType, T, This, ThisValue = This> = IterateeFn<R, T, This, ThisValue, unknown>;
 

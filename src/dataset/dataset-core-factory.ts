@@ -1,7 +1,13 @@
-import { Dataset } from "./dataset";
-import { SyncableDatasetIterableTypeLike, ResultType } from "./dataset-core";
-import { DatasetContext } from "./dataset-context";
+import { Dataset } from "./sync";
+import { AsyncDataset } from "./async";
+import { ResultType, ResultValue } from "../iterator/result-type";
+import { AsyncIterableLike } from "./sync";
 
-export interface DatasetCoreFactory<R extends ResultType, T, TLike, TFind> extends DatasetContext<R, T, TLike, TFind> {
-  dataset(sequence?: SyncableDatasetIterableTypeLike<R, T | TLike>): Dataset<R, T, TLike, TFind>;
+export type DatasetCoreFactorySequence<Async extends ResultType, T> = ResultValue<Async, Iterable<T>, AsyncIterableLike<T>>;
+
+export interface DatasetCoreFactory<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> {
+
+  dataset(sequence?: Iterable<T>): Dataset<T, TCreate, TFind>;
+  asyncDataset(sequence: AsyncIterableLike<T>): AsyncDataset<T, TCreate, TFind>;
+
 }
