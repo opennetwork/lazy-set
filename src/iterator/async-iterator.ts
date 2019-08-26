@@ -1,4 +1,4 @@
-import { AsyncIterableLike } from "../dataset/sync";
+import { AsyncIterableLike } from "../lazy-set";
 
 export function isAsyncIterable<T>(value: AsyncIterableLike<T>): value is AsyncIterable<T> {
   function isAsyncIterableInstance(value: AsyncIterableLike<T>): value is AsyncIterable<T> {
@@ -36,9 +36,33 @@ export function asyncIterable<T>(value: AsyncIterableLike<T>): AsyncIterable<T> 
   }
   return {
     [Symbol.asyncIterator]: async function *() {
+      if (!isIterable(value)) {
+        return;
+      }
       for (const item of value) {
         yield item;
       }
     }
   };
+}
+
+export async function drainAsync(iterable: AsyncIterableLike<unknown>) {
+  const iterator = asyncIterator(iterable);
+  let next: IteratorResult<unknown>;
+  do {
+    next = await iterator.next();
+  } while (next && !next.done);
+  return !!(next && next.value);
+}
+
+export function drain(iterable: Iterable<unknown>) {
+  if (!isIterable(iterable)) {
+    throw new Error("Non iterable given to drain");
+  }
+  const iterator = iterable[Symbol.iterator]();
+  let next: IteratorResult<unknown>;
+  do {
+    next = iterator.next();
+  } while (next && !next.done);
+  return !!(next && next.value);
 }
