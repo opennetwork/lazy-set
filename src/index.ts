@@ -10,12 +10,12 @@ function basicEquals(left: unknown, right: unknown): boolean {
   return left === right;
 }
 
-export function dataFactory<T, TCreate = T, TFind = TCreate | T>(options: LazySetContext<T, TCreate, TFind>): LazySetCoreFactory<T, TCreate, TFind> {
+export function lazySetFactory<T, TCreate = T, TFind = TCreate | T>(options: LazySetContext<T, TCreate, TFind>): LazySetCoreFactory<T, TCreate, TFind> {
   return new LazySetCoreFactoryImplementation(options);
 }
 
-export function basicDataFactory<T>(is: (value: unknown) => value is T, equals: (left: T, right: T) => boolean = basicEquals): LazySetCoreFactory<T, T, T> {
-  return dataFactory({
+export function basicLazySetFactory<T>(is: (value: unknown) => value is T, equals: (left: T, right: T) => boolean = basicEquals): LazySetCoreFactory<T, T, T> {
+  return lazySetFactory({
     isCreate: is,
     is,
     isFind: is,
@@ -31,9 +31,9 @@ export type PrimitiveTypes = {
 };
 export type PrimitiveTypeString = keyof PrimitiveTypes;
 
-export function primitiveDataFactory<P extends PrimitiveTypeString>(type: P) {
+export function primitiveLazySetFactory<P extends PrimitiveTypeString>(type: P) {
   type T = PrimitiveTypes[P];
-  return basicDataFactory(
+  return basicLazySetFactory(
     function is(value: unknown): value is T {
       return typeof value === type;
     },
