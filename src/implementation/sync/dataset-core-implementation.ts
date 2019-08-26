@@ -4,7 +4,7 @@ import {
   DatasetCoreFactory
 } from "../../dataset/index";
 
-export class DatasetCoreImplementation<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> implements DatasetCore<T, TCreate, TFind> {
+export class DatasetCoreImplementation<T, TCreate = T, TFind = TCreate | T> implements DatasetCore<T, TCreate, TFind> {
 
   protected datasetFactory: DatasetCoreFactory<T, TCreate, TFind>;
   protected datasetContext: DatasetContext<false, T, TCreate, TFind>;

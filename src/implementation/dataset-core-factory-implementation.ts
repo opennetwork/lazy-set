@@ -11,9 +11,9 @@ import { AsyncDatasetImplementation } from "./async/async-dataset-implementation
 import { DatasetContextImplementation, PartialDatasetContextOptions } from "./sync/dataset-context-implementation";
 import { AsyncDatasetContextImplementation } from "./async/async-dataset-context-implementation";
 
-export type DatasetCoreFactoryOptions<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> = Omit<PartialDatasetContextOptions<false, T, TCreate, TFind>, "async">;
+export type DatasetCoreFactoryOptions<T, TCreate = T, TFind = TCreate | T> = Omit<PartialDatasetContextOptions<false, T, TCreate, TFind>, "async">;
 
-export class DatasetCoreFactoryImplementation<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> implements DatasetCoreFactory<T, TCreate, TFind> {
+export class DatasetCoreFactoryImplementation<T, TCreate = T, TFind = TCreate | T> implements DatasetCoreFactory<T, TCreate, TFind> {
 
   private readonly syncContext: DatasetContext<false, T, TCreate, TFind, Iterable<any>>;
   private readonly asyncContext: DatasetContext<true, T, TCreate, TFind, AsyncIterable<any>>;
@@ -29,7 +29,7 @@ export class DatasetCoreFactoryImplementation<T, TCreate extends T = T, TFind ex
     });
   }
 
-  dataset(sequence?: Iterable<T>): Dataset<T, TCreate, TFind> {
+  dataset(sequence?: Iterable<T | TCreate>): Dataset<T, TCreate, TFind> {
     return new DatasetImplementation<T, TCreate, TFind>(
       this,
       this.syncContext,
@@ -37,8 +37,8 @@ export class DatasetCoreFactoryImplementation<T, TCreate extends T = T, TFind ex
     );
   }
 
-  asyncDataset(sequence: AsyncIterableLike<T>): AsyncDataset<T, TCreate, TFind> {
-    const iterable: AsyncIterable<T> | undefined = sequence ? asyncIterable(sequence) : undefined;
+  asyncDataset(sequence: AsyncIterableLike<T | TCreate>): AsyncDataset<T, TCreate, TFind> {
+    const iterable: AsyncIterable<T | TCreate> | undefined = sequence ? asyncIterable(sequence) : undefined;
     return new AsyncDatasetImplementation<T, TCreate, TFind>(
       this,
       this.asyncContext,

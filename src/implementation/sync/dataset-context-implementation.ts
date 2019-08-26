@@ -5,9 +5,9 @@ import {
 import { ResultType, ResultValue } from "../../iterator/result-type";
 import { isAsyncIterable, isIterable } from "../../iterator";
 
-export type PartialDatasetContextOptions<Async extends ResultType, T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> = & Omit<DatasetContext<Async, T, TCreate, TFind>, "drain">;
+export type PartialDatasetContextOptions<Async extends ResultType, T, TCreate = T, TFind = TCreate | T> = & Omit<DatasetContext<Async, T, TCreate, TFind>, "drain">;
 
-export class DatasetContextImplementation<Async extends ResultType, T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T), DrainType extends AsyncIterableLike<any> = Iterable<any>> implements DatasetContext<Async, T, TCreate, TFind, DrainType> {
+export class DatasetContextImplementation<Async extends ResultType, T, TCreate = T, TFind = TCreate | T, DrainType extends AsyncIterableLike<any> = Iterable<any>> implements DatasetContext<Async, T, TCreate, TFind, DrainType> {
 
   get async() {
     return this.context.async;

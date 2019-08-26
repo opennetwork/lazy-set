@@ -3,7 +3,7 @@ import { ResultType, ResultValue } from "../../iterator/result-type";
 export type AsyncIterableLike<T> = Iterable<T> | AsyncIterable<T>;
 export type AsyncDrainType<T> = AsyncIterableLike<T>;
 
-export interface DatasetContext<Async extends ResultType, T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T), DrainType extends AsyncDrainType<any> = Iterable<any>> {
+export interface DatasetContext<Async extends ResultType, T, TCreate = T, TFind = TCreate | T, DrainType extends AsyncDrainType<any> = Iterable<any>> {
   readonly async: Async;
   isMatch(value: T, find: T | TCreate | TFind): boolean;
   is(value: unknown): value is T;

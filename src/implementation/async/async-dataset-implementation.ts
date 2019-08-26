@@ -12,31 +12,31 @@ import {
 } from "../../dataset/index";
 import { AsyncDatasetCoreImplementation } from "./async-dataset-core-implementation";
 
-export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> extends AsyncDatasetCoreImplementation<T, TCreate, TFind> implements AsyncDataset<T, TCreate, TFind> {
+export class AsyncDatasetImplementation<T, TCreate = T, TFind = TCreate | T> extends AsyncDatasetCoreImplementation<T, TCreate, TFind> implements AsyncDataset<T, TCreate, TFind> {
 
   constructor(datasetFactory: DatasetCoreFactory<T, TCreate, TFind>, datasetContext: AsyncDatasetContext<T, TCreate, TFind>, values?: AsyncIterableLike<T | TCreate>) {
     super(datasetFactory, datasetContext, values);
   }
 
-  addAll(other: AsyncIterableLike<TCreate>) {
+  addAll(other: AsyncIterableLike<T | TCreate>) {
     return this.datasetFactory.asyncDataset(other).forEach(
       value => this.add(value)
     );
   }
 
-  contains(other: AsyncIterableLike<TCreate>) {
+  contains(other: AsyncIterableLike<T | TCreate>) {
     return this.datasetFactory.asyncDataset(other).every(
       value => this.has(value)
     );
   }
 
-  difference(other: AsyncIterableLike<TCreate>) {
+  difference(other: AsyncIterableLike<T | TCreate>) {
     return this.datasetFactory.asyncDataset(other).except(
       value => this.has(value)
     );
   }
 
-  async equals(other: AsyncIterableLike<TCreate>) {
+  async equals(other: AsyncIterableLike<T | TCreate>) {
     const that = this;
     const otherSet = this.datasetFactory.asyncDataset(other);
     // getSize after, as both sets will be drained then
@@ -58,14 +58,14 @@ export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends 
     }
   }
 
-  async import(iterable: AsyncIterableLike<TCreate>) {
+  async import(iterable: AsyncIterableLike<T | TCreate>) {
     // Import as async, then grab
     const datastream = this.datasetFactory.asyncDataset(iterable);
     await this.datasetContext.drain(datastream);
     return datastream;
   }
 
-  intersection(other: AsyncIterableLike<TCreate>) {
+  intersection(other: AsyncIterableLike<T | TCreate>) {
     const that = this;
     return this.datasetFactory.asyncDataset(other).filter({
       test: value => that.has(value)
@@ -96,7 +96,7 @@ export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends 
     return accumulator;
   }
 
-  union(other: AsyncIterableLike<TCreate>) {
+  union(other: AsyncIterableLike<T | TCreate>) {
     const otherDataset = this.datasetFactory.asyncDataset(other);
     const that = this;
     const generator = async function *(): AsyncIterable<T | TCreate> {

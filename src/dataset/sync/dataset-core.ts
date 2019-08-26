@@ -1,4 +1,4 @@
-export interface DatasetCore<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> extends Iterable<T> {
+export interface DatasetCore<T, TCreate = T, TFind = TCreate | T> extends Iterable<T> {
 
   readonly size: number;
 

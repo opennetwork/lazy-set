@@ -11,13 +11,13 @@ import {
   DatasetCoreFactory
 } from "../../dataset/index";
 
-export class DatasetImplementation<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> extends DatasetCoreImplementation<T, TCreate, TFind> implements Dataset<T, TCreate, TFind> {
+export class DatasetImplementation<T, TCreate = T, TFind = TCreate | T> extends DatasetCoreImplementation<T, TCreate, TFind> implements Dataset<T, TCreate, TFind> {
 
   constructor(datasetFactory: DatasetCoreFactory<T, TCreate, TFind>, datasetContext: DatasetContext<false, T, TCreate, TFind>, values?: Iterable<T | TCreate>) {
     super(datasetFactory, datasetContext, values);
   }
 
-  addAll(other: Iterable<TCreate>) {
+  addAll(other: Iterable<T | TCreate>) {
     return this.datasetFactory.dataset(other).forEach(
       value => this.add(value)
     );

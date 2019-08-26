@@ -7,7 +7,7 @@ import {
 } from "../../dataset/index";
 import { asyncIterator } from "../../iterator";
 
-export class AsyncDatasetCoreImplementation<T, TCreate extends T = T, TFind extends (TCreate | T) = (TCreate | T)> implements AsyncDatasetCore<T, TCreate, TFind> {
+export class AsyncDatasetCoreImplementation<T, TCreate = T, TFind = TCreate | T> implements AsyncDatasetCore<T, TCreate, TFind> {
 
   protected datasetFactory: DatasetCoreFactory<T, TCreate, TFind>;
   protected datasetContext: AsyncDatasetContext<T, TCreate, TFind>;
