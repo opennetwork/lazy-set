@@ -11,9 +11,7 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {},
-  "dependencies": {
-    "tsdef": "^0.0.13"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/opennetwork/lazy-set.git"
