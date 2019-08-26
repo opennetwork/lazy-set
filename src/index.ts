@@ -51,7 +51,7 @@ function getContext<T>(): LazySetContext<T> {
     isCreate: isAny,
     is: isAny,
     isFind: isAny,
-    isMatch: isAny,
+    isMatch: basicEquals,
     create: (value: T) => value
   };
 }
