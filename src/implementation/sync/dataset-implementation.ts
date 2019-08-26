@@ -65,9 +65,10 @@ export class DatasetImplementation<T, TCreate extends T = T, TFind extends (TCre
 
   map(iteratee: MapIterateeLike<false, T, this>): Dataset<T, TCreate, TFind> {
     const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.map.bind(iteratee);
+    const that = this;
     const generator = function *() {
-      for (const value of this) {
-        yield fn(value, this);
+      for (const value of that) {
+        yield fn(value, that);
       }
     };
     return this.datasetFactory.dataset(generator());
@@ -88,14 +89,13 @@ export class DatasetImplementation<T, TCreate extends T = T, TFind extends (TCre
 
   union(other: Iterable<TCreate>): Dataset<T, TCreate, TFind> {
     const otherDataset = this.datasetFactory.dataset(other);
+    const that = this;
     const generator = function *(): Iterable<T | TCreate> {
-      for (const value of this) {
+      for (const value of that) {
         yield value;
       }
       for (const value of otherDataset) {
-        if (!this.has(value)) {
-          yield value;
-        }
+        yield value;
       }
     };
     return this.datasetFactory.dataset(generator());
@@ -122,9 +122,10 @@ export class DatasetImplementation<T, TCreate extends T = T, TFind extends (TCre
     function negateIfNeeded(value: boolean) {
       return negate ? !value : value;
     }
+    const that = this;
     const generator = function *(): Iterable<T> {
-      for (const value of this) {
-        if (negateIfNeeded(fn(value, this))) {
+      for (const value of that) {
+        if (negateIfNeeded(fn(value, that))) {
           yield value;
         }
       }

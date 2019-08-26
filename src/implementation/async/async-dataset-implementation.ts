@@ -38,7 +38,13 @@ export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends 
 
   async equals(other: AsyncIterableLike<TCreate>) {
     const that = this;
-    return this.datasetFactory.asyncDataset(other).every(value => that.has(value));
+    const otherSet = this.datasetFactory.asyncDataset(other);
+    // getSize after, as both sets will be drained then
+    // every may return early with false, but getSize can't
+    return (
+      otherSet.every(value => that.has(value)) &&
+      this.getSize() === otherSet.getSize()
+    );
   }
 
   async every(iteratee: FilterIterateeLike<true, T, this>) {
@@ -48,7 +54,7 @@ export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends 
   async forEach(iteratee: RunIterateeLike<true, T, this>) {
     const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.run.bind(iteratee);
     for await (const value of this) {
-      fn(value, this);
+      await fn(value, this);
     }
   }
 
@@ -68,9 +74,10 @@ export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends 
 
   map(iteratee: MapIterateeLike<true, T, this>) {
     const fn = iteratee instanceof Function ? iteratee.bind(this) : iteratee.map.bind(iteratee);
+    const that = this;
     const generator = async function *() {
-      for await (const value of this) {
-        yield fn(value, this);
+      for await (const value of that) {
+        yield await fn(value, that);
       }
     };
     return this.datasetFactory.asyncDataset(generator());
@@ -84,21 +91,20 @@ export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends 
         accumulator = (value as unknown) as Accumulator;
         continue;
       }
-      accumulator = fn(accumulator, value, this);
+      accumulator = await fn(accumulator, value, this);
     }
     return accumulator;
   }
 
   union(other: AsyncIterableLike<TCreate>) {
     const otherDataset = this.datasetFactory.asyncDataset(other);
+    const that = this;
     const generator = async function *(): AsyncIterable<T | TCreate> {
-      for (const value of this) {
+      for await (const value of that) {
         yield value;
       }
       for await (const value of otherDataset) {
-        if (!this.has(value)) {
-          yield value;
-        }
+        yield value;
       }
     };
     return this.datasetFactory.asyncDataset(generator());
@@ -125,9 +131,10 @@ export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends 
     function negateIfNeeded(value: boolean) {
       return negate ? !value : value;
     }
+    const that = this;
     const generator = async function *(): AsyncIterable<T> {
-      for await (const value of this) {
-        if (negateIfNeeded(fn(value, this))) {
+      for await (const value of that) {
+        if (negateIfNeeded(await fn(value, that))) {
           yield value;
         }
       }
