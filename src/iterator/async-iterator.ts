@@ -47,6 +47,9 @@ export function asyncIterable<T>(value: AsyncIterableLike<T>): AsyncIterable<T> 
 }
 
 export async function drainAsync(iterable: AsyncIterableLike<unknown>) {
+  if (!iterable) {
+    return;
+  }
   const iterator = asyncIterator(iterable);
   let next: IteratorResult<unknown>;
   do {
@@ -56,8 +59,8 @@ export async function drainAsync(iterable: AsyncIterableLike<unknown>) {
 }
 
 export function drain(iterable: Iterable<unknown>) {
-  if (!isIterable(iterable)) {
-    throw new Error("Non iterable given to drain");
+  if (!iterable) {
+    return;
   }
   const iterator = iterable[Symbol.iterator]();
   let next: IteratorResult<unknown>;
