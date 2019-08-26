@@ -1,7 +1,9 @@
 import {
   LazySetCoreFactoryImplementation
 } from "./implementation/lazy-set-core-factory-implementation";
-import { LazySetContext, LazySetCoreFactory } from "./lazy-set";
+import { AsyncIterableLike, LazySetContext, LazySetCoreFactory } from "./lazy-set";
+import { LazySetImplementation } from "./implementation/sync/lazy-set-implementation";
+import { AsyncLazySetImplementation } from "./implementation/async/async-lazy-set-implementation";
 
 export * from "./lazy-set";
 export * from "./iterator";
@@ -39,4 +41,34 @@ export function primitiveLazySetFactory<P extends PrimitiveTypeString>(type: P) 
     },
     basicEquals
   );
+}
+
+function isAny(value: unknown): value is any {
+  return true;
+}
+
+function getContext<T>(): LazySetContext<T> {
+  return {
+    isCreate: isAny,
+    is: isAny,
+    isFind: isAny,
+    isMatch: isAny,
+    create: (value: T) => value
+  };
+}
+
+export class LazySet<T> extends LazySetImplementation<T, T, T> {
+
+  constructor(iterable?: Iterable<T>) {
+    super(lazySetFactory(getContext()), getContext(), iterable);
+  }
+
+}
+
+export class AsyncLazySet<T> extends AsyncLazySetImplementation<T, T, T> {
+
+  constructor(iterable?: AsyncIterableLike<T>) {
+    super(lazySetFactory(getContext()), getContext(), iterable);
+  }
+
 }
