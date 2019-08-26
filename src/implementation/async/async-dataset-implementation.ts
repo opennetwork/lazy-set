@@ -43,7 +43,7 @@ export class AsyncDatasetImplementation<T, TCreate extends T = T, TFind extends 
     // every may return early with false, but getSize can't
     return (
       otherSet.every(value => that.has(value)) &&
-      this.getSize() === otherSet.getSize()
+      await this.getSize() === await otherSet.getSize()
     );
   }
 
