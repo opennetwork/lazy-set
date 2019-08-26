@@ -33,13 +33,12 @@ export type PrimitiveTypes = {
 };
 export type PrimitiveTypeString = keyof PrimitiveTypes;
 
-export function primitiveLazySetFactory<P extends PrimitiveTypeString>(type: P) {
-  type T = PrimitiveTypes[P];
+export function primitiveLazySetFactory<P extends PrimitiveTypeString, T extends PrimitiveTypes[P] = PrimitiveTypes[P]>(type: P, equals: (left: T, right: T) => boolean = basicEquals) {
   return basicLazySetFactory(
     function is(value: unknown): value is T {
       return typeof value === type;
     },
-    basicEquals
+    equals
   );
 }
 
