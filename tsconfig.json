@@ -12,8 +12,9 @@
         "downlevelIteration": true,
         "moduleResolution": "node",
         "sourceMap": true,
-        "outDir": "dist",
+        "outDir": "esnext",
         "baseUrl": ".",
+        "declaration": true,
         "paths": {
             "*": [
                 "node_modules/*",
