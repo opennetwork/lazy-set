@@ -1,6 +1,6 @@
 {
   "name": "@opennetwork/lazy-set",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "types": "./esnext/index.d.ts",
   "license": "MIT",
   "type": "module",
